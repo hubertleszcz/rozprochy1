@@ -10,33 +10,8 @@ struct listNode{
     struct listNode* next;
 };
 
-struct listNode* insert(struct listNode* head, char* temporaryBuffer){
-	struct listNode* newNode = head->next;
-    
-    if(newNode == NULL){
-        newNode = (struct listNode*)malloc(sizeof(struct listNode));
-        newNode->data = (char*)malloc(strlen(temporaryBuffer)*sizeof(char));
-        strcpy(newNode->data, temporaryBuffer);
-        newNode->prev = head;
-        newNode->next = NULL;
-    }
-    else{
-        if(strcmp(newNode->data,temporaryBuffer)>0){
-            newNode->next = insert(newNode, temporaryBuffer);
-        }        
-        else{
-            newNode->prev = (struct listNode*)malloc(sizeof(struct listNode));
-            newNode = newNode->prev;
-            newNode->data = (char*)malloc(strlen(temporaryBuffer)*sizeof(char));
-            strcpy(newNode->data, temporaryBuffer);
-            newNode->prev = head;
-            newNode->next = head->next;
-        }
 
-    }
 
-    return newNode;
-}
 
 void deleteNode(struct listNode* head, int deletedNode){
     struct listNode* current = head;
@@ -47,34 +22,63 @@ void deleteNode(struct listNode* head, int deletedNode){
     free(current->data);
     current->prev->next = current->next;
     current->next->prev = current->prev;
+    current->next = NULL;
+    current->prev = NULL;
     free(current);
 }
 
 
+void freeMemory(struct listNode* head) {
+    struct listNode* curr = head->next;
+    struct listNode* next;
 
-
-
-void freeMemory(struct listNode* head){
-    while(head->next != NULL){
-        deleteNode(head,1);
+    while (curr != NULL) {
+        next = curr->next; 
+        free(curr->data); 
+        free(curr); 
+        curr = next;
     }
+    head->next = NULL;
+    free(head);
 }
-
 void printOut(struct listNode* head){
     struct listNode* current = head;
     while(current != NULL){
-        printf("%s\n", current->data);
+        printf("%s", current->data);
         current = current->next;
     }
 }
 
+struct listNode* insert(struct listNode* head, char* temporaryBuffer){
+	struct listNode* newNode = head->next;
+    
+    if(newNode == NULL){
+        newNode = (struct listNode*)malloc(sizeof(struct listNode));
+        newNode->data = (char*)malloc(strlen(temporaryBuffer));
+        strcpy(newNode->data, temporaryBuffer);
+        newNode->prev = head;
+        newNode->next = NULL;
+    }
+    else{
+        if(strcmp(newNode->data,temporaryBuffer)>0){
+            newNode->next = insert(newNode, temporaryBuffer);
+        }        
+        else{
+            
+            newNode->prev = (struct listNode*)malloc(sizeof(struct listNode));
+            newNode = newNode->prev;
+            newNode->data = (char*)malloc(strlen(temporaryBuffer));
+            strcpy(newNode->data, temporaryBuffer);
+            newNode->prev = head;
+            newNode->next = head->next;
+        }
+
+    }
+
+    return newNode;
+}
 
 int main(){
-    //lista 2kierunkowa
-    //napisy
-    //jak dodajesz to alfabetycznie malejaco    
-    // insert i delete
-	//max 100 znakow
     int deletedNode, ongoing = 1;
     size_t stringLength, newLength;
 	int choice;
@@ -85,7 +89,6 @@ int main(){
         scanf("%d", &choice);
         switch(choice){
             case 1:
-                printf("dupa\n");
                 stringLength = 100;
 	            char* temporaryBuffer = (char*)malloc(stringLength*sizeof(char));
                 newLength = getline(&temporaryBuffer, &stringLength, stdin);
@@ -99,17 +102,11 @@ int main(){
             case 3:
                 printOut(head->next);
                 break;
-            case 4:
-                freeMemory(head);
-                break;
             case 0:
                 ongoing = 0;
                 break;
         }
     }
-
-
-    printf("%s", head->next->data);
-    free(head);
-	return 0;
+    freeMemory(head);
+    return 0;
 }
